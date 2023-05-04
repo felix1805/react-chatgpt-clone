@@ -10,7 +10,14 @@ const App = () => {
     setMessage(null)
     setValue("")
     setCurrentTitle(null)
-  }
+  };
+
+  const handleClick = (uniqueTitle) => {
+    setCurrentTitle(uniqueTitle)
+    setMessage(null)
+    setValue("")
+  };
+
   const getMessages = async () => {
     const options = {
       method: "POST",
@@ -67,7 +74,7 @@ const App = () => {
       <section className="side-bar">
         <button onClick={createNewChat}>+ New Chat</button>
         <ul className="history">
-          <li>SCHNITZEL</li>
+          {uniqueTitles?.map((uniqueTitle, index) => <li key={index} onClick={() => handleClick(uniqueTitle)}>{uniqueTitles}</li>)}
         </ul>
         <nav>
           <p>Made by Felix</p>
@@ -78,7 +85,7 @@ const App = () => {
         <ul className="feed">
           {currentChat?.map((chatMessage, index) => <li key={index}>
             <p className='role'>{chatMessage.role}</p>
-            <p>{chatMessage.message}</p>
+            <p>{chatMessage.content}</p>
           </li>)}
         </ul>
         <div className="bottom-section">
