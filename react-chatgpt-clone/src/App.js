@@ -1,8 +1,16 @@
-import {useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 
 const App = () => {
   const [value, setValue] = useState(null);
   const [message, setMessage] = useState(null);
+  const [previousChats, setPreviousChats] = useState([]);
+  const [currentTitle, setCurrentTitle] = useState(null);
+
+  const createNewChat = () => {
+    setMessage(null)
+    setValue("")
+    setCurrentTitle(null)
+  }
   const getMessages = async () => {
     const options = {
       method: "POST",
@@ -16,18 +24,48 @@ const App = () => {
     try {
       const response = await fetch('http://localhost:8000/completions', options)
       const data = await response.json()
-      console.log(data)
       setMessage(data.choices[0].message)
     } catch (error) {
       console.error(error)
     }
-  }
-console.log(message)
+  };
+
+  useEffect(() => {
+    console.log(currentTitle, value, message)
+    if (!currentTitle && value && message) {
+      setCurrentTitle(value)
+    }
+    if (currentTitle && value && message) {
+      setPreviousChats(prevChats => (
+        [...prevChats,
+        {
+          title: currentTitle,
+          role: "user",
+          content: value
+        },
+        {
+          title: currentTitle,
+          role: message.role,
+          content: message.content
+        },
+        ]
+      ));
+    };
+  }, [message, currentTitle]);
+
+  console.log(previousChats);
+
+  const currentChat = previousChats.filter(previousChat => previousChat.title === currentTitle);
+
+  const uniqueTitles = Array.from(new Set(previousChats.map(previousChat => previousChat.title)));
+
+  console.log(uniqueTitles);
+
 
   return (
     <div className="app">
       <section className="side-bar">
-        <button>+ New Chat</button>
+        <button onClick={createNewChat}>+ New Chat</button>
         <ul className="history">
           <li>SCHNITZEL</li>
         </ul>
@@ -36,8 +74,12 @@ console.log(message)
         </nav>
       </section>
       <section className="main">
-        <h1>FelixGPT</h1>
+        {!currentTitle && <h1>FelixGPT</h1>}
         <ul className="feed">
+          {currentChat?.map((chatMessage, index) => <li key={index}>
+            <p className='role'>{chatMessage.role}</p>
+            <p>{chatMessage.message}</p>
+          </li>)}
         </ul>
         <div className="bottom-section">
           <div className="input-container">
